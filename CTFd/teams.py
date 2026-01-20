@@ -16,6 +16,9 @@ from CTFd.utils.humanize.words import pluralize
 from CTFd.utils.user import get_current_user, get_current_user_attrs
 from CTFd.utils.validators import ValidationError
 
+import docker
+import random
+
 teams = Blueprint("teams", __name__)
 
 
@@ -318,6 +321,18 @@ def new():
 
         db.session.add(team)
         db.session.commit()
+
+        # Generate a subdomain name for the team -- to avoid collisions, add a number 0-999
+        # TODO Validate allowed subdomain length
+        teamname_sanitized = ''.join([char for char in teamname.lower()[:64] if char.isalnum()])
+        team_subdomain = f"{teamname_sanitized}-{random.randint(0,999)}"
+
+        # TODO Add code here to add DNS/deploy other container
+        print(f"New team \"{teamname}\" created -- spinning up \"{team_subdomain}\"...")
+        print("I don't have that going but for now here's a successful call to `docker container list`:")
+        docker_client = docker.from_env()
+        [print(container.name) for container in docker_client.containers.list()]
+        print()
 
         for field_id, value in entries.items():
             entry = TeamFieldEntries(field_id=field_id, value=value, team_id=team.id)

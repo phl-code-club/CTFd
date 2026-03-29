@@ -1,3 +1,6 @@
+include:
+  - ../docker-compose-common.yml
+
 services:
   ctfd:
     build: .
